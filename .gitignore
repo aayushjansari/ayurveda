@@ -1,0 +1,107 @@
+# =============================================================================
+# DEPLOYMENT-READY .gitignore - Only Essential Files for Streamlit Cloud
+# =============================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment (EXCLUDE - not needed for deployment)
+ayur/
+venv/
+ENV/
+env/
+.venv/
+
+# IDEs (EXCLUDE - not needed for deployment)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files (EXCLUDE)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Logs (EXCLUDE)
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# =============================================================================
+# UNUSED/LEGACY FILES (EXCLUDE from deployment)
+# =============================================================================
+
+# Legacy Python files (not needed for deployment)
+chat.py
+RAG.py
+embeddings.py
+load_files.py
+test_*.py
+
+# Legacy documentation (replace with README.md)
+LLM_SETUP_GUIDE.md
+PERSISTENCE_GUIDE.md
+Tasks.md
+
+# Docker files (not needed for Streamlit Cloud)
+Dockerfile
+docker-compose.yml
+railway.toml
+
+
+# Large PDF files (too big for GitHub, processed into ChromaDB)
+knowledge_base_files/*.pdf
+!knowledge_base_files/.gitkeep
+
+# Temporary and cache files
+*.tmp
+*.temp
+.cache/
+.hypothesis/
+test_output/
+coverage.xml
+*.cover
+
+# Model files (downloaded automatically)
+models/
+*.bin
+*.safetensors
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints

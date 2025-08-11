@@ -1,0 +1,10 @@
+{
+  "total_documents": 1141,
+  "total_chunks": 1141,
+  "total_chars": 0,
+  "avg_chunk_size": 0,
+  "doc_types": {
+    "general": 1141
+  },
+  "processing_timestamp": "2025-08-11 23:13:49"
+}

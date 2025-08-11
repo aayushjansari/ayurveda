@@ -1,0 +1,14 @@
+{
+  "strategy_name": "openai",
+  "model_info": {
+    "strategy": "openai",
+    "description": "OpenAI text-embedding-3-small",
+    "model_name": "unknown",
+    "available_strategies": [
+      "openai",
+      "huggingface"
+    ]
+  },
+  "timestamp": "2025-08-11 23:13:23",
+  "app_version": "2.0.0 (Cloud Ready)"
+}

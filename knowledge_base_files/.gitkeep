@@ -1,0 +1,8 @@
+# Knowledge base directory for PDF documents
+# Add your Ayurvedic PDF documents here
+# Note: PDF files are excluded from git due to size limits
+
+# For deployment:
+# 1. Upload PDFs manually to your deployment environment
+# 2. Or use cloud storage (S3, Google Drive) for larger knowledge bases
+# 3. For demo purposes, you can use smaller sample PDFs
