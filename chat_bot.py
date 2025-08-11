@@ -1449,13 +1449,14 @@ def display_sidebar():
             llm_type = "OpenAI" if hasattr(st.session_state.rag_system.llm, 'model_name') else "Local/Demo"
             st.sidebar.markdown(f"🤖 **LLM:** {llm_type}")
         
-        # Clear system button
-        if st.sidebar.button("🗑️ Clear System", help="Reset and clear all data"):
-            for key in ["pipeline_initialized", "document_processor", "embedding_system", "rag_system"]:
-                if key in st.session_state:
-                    del st.session_state[key]
-            st.session_state.messages = []
-            st.rerun()
+        # Clear system button (local development only)
+        if DEPLOYMENT_CONFIG.get("environment") != "streamlit_cloud":
+            if st.sidebar.button("🗑️ Clear System", help="Reset and clear all data"):
+                for key in ["pipeline_initialized", "document_processor", "embedding_system", "rag_system"]:
+                    if key in st.session_state:
+                        del st.session_state[key]
+                st.session_state.messages = []
+                st.rerun()
     
     else:
         st.sidebar.warning("🟡 **System Not Initialized**")
@@ -1583,12 +1584,13 @@ def display_sidebar():
             else:
                 st.sidebar.error("Please initialize the system first")
     
-    # Clear chat button
-    if st.sidebar.button("🗑️ Clear Chat History"):
-        # Keep only the welcome message
-        if st.session_state.messages:
-            st.session_state.messages = st.session_state.messages[:1]
-        st.rerun()
+    # Clear chat button (local development only)
+    if DEPLOYMENT_CONFIG.get("environment") != "streamlit_cloud":
+        if st.sidebar.button("🗑️ Clear Chat History"):
+            # Keep only the welcome message
+            if st.session_state.messages:
+                st.session_state.messages = st.session_state.messages[:1]
+            st.rerun()
     
     # System information
     st.sidebar.markdown("### ℹ️ About")
