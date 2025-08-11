@@ -1,9 +1,3 @@
-# System packages needed for Streamlit Cloud deployment
-# This file is automatically read by Streamlit Cloud
-
-# For PDF processing
 poppler-utils
 tesseract-ocr
-
-# For ChromaDB and vector operations
 sqlite3
