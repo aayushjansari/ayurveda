@@ -1464,67 +1464,96 @@ def display_sidebar():
         
         # Check for existing state
         existing_state = check_existing_state()
-        kb_changed = check_knowledge_base_changes()
         
-        if existing_state['complete_state_exist']:
-            if kb_changed:
-                st.sidebar.warning("⚠️ **Knowledge base has changed**")
-                st.sidebar.write("Your PDF files have been modified since last initialization.")
-                
-                col1, col2 = st.sidebar.columns(2)
-                with col1:
-                    if st.button("🚀 Fast Load", help="Load existing state (may be outdated)"):
-                        with st.sidebar:
-                            if run_fast_initialization():
-                                st.success("✅ Fast initialization complete!")
-                                st.rerun()
-                            else:
-                                st.error("❌ Fast initialization failed")
-                
-                with col2:
-                    if st.button("🔄 Full Rebuild", help="Process documents from scratch"):
-                        with st.sidebar:
-                            if run_initialization_pipeline():
-                                st.success("✅ System initialized successfully!")
-                                st.rerun()
-                            else:
-                                st.error("❌ Initialization failed")
-            else:
-                st.sidebar.success("💾 **Saved state available**")
+        if DEPLOYMENT_CONFIG.get("environment") == "streamlit_cloud":
+            # Cloud deployment - simplified sidebar
+            if existing_state['complete_state_exist']:
+                st.sidebar.success("💾 **Ready to Start**")
                 if existing_state['last_update']:
                     if '|' in existing_state['last_update']:
                         timestamp, _ = existing_state['last_update'].split('|', 1)
-                        st.sidebar.write(f"Last updated: {timestamp}")
+                        st.sidebar.write(f"Knowledge base: {timestamp}")
                 
-                col1, col2 = st.sidebar.columns(2)
-                with col1:
-                    if st.button("⚡ Fast Load", type="primary", help="Load from saved state (recommended)"):
-                        with st.sidebar:
-                            if run_fast_initialization():
-                                st.success("✅ Fast initialization complete!")
-                                st.rerun()
-                            else:
-                                st.error("❌ Fast initialization failed")
+                if st.sidebar.button("⚡ Fast Load", type="primary", help="Start with saved knowledge base"):
+                    with st.sidebar:
+                        if run_fast_initialization():
+                            st.success("✅ Ready to chat!")
+                            st.rerun()
+                        else:
+                            st.error("❌ Initialization failed")
+            else:
+                st.sidebar.info("🆕 **System Setup**")
                 
-                with col2:
-                    if st.button("🔄 Rebuild", help="Process documents from scratch"):
-                        with st.sidebar:
-                            if run_initialization_pipeline():
-                                st.success("✅ System initialized successfully!")
-                                st.rerun()
-                            else:
-                                st.error("❌ Initialization failed")
+                if st.sidebar.button("🚀 Initialize System", type="primary", help="Initialize with pre-processed knowledge"):
+                    with st.sidebar:
+                        if run_initialization_pipeline():
+                            st.success("✅ System ready!")
+                            st.rerun()
+                        else:
+                            st.error("❌ Initialization failed")
         else:
-            st.sidebar.info("🆕 **First time setup**")
+            # Local development - show full options
+            kb_changed = check_knowledge_base_changes()
             
-            # Full initialization button
-            if st.sidebar.button("🚀 Initialize System", type="primary", help="Process documents and create knowledge base"):
-                with st.sidebar:
-                    if run_initialization_pipeline():
-                        st.success("✅ System initialized successfully!")
-                        st.rerun()
-                    else:
-                        st.error("❌ Initialization failed")
+            if existing_state['complete_state_exist']:
+                if kb_changed:
+                    st.sidebar.warning("⚠️ **Knowledge base has changed**")
+                    st.sidebar.write("Your PDF files have been modified since last initialization.")
+                    
+                    col1, col2 = st.sidebar.columns(2)
+                    with col1:
+                        if st.button("🚀 Fast Load", help="Load existing state (may be outdated)"):
+                            with st.sidebar:
+                                if run_fast_initialization():
+                                    st.success("✅ Fast initialization complete!")
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Fast initialization failed")
+                    
+                    with col2:
+                        if st.button("🔄 Full Rebuild", help="Process documents from scratch"):
+                            with st.sidebar:
+                                if run_initialization_pipeline():
+                                    st.success("✅ System initialized successfully!")
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Initialization failed")
+                else:
+                    st.sidebar.success("💾 **Saved state available**")
+                    if existing_state['last_update']:
+                        if '|' in existing_state['last_update']:
+                            timestamp, _ = existing_state['last_update'].split('|', 1)
+                            st.sidebar.write(f"Last updated: {timestamp}")
+                    
+                    col1, col2 = st.sidebar.columns(2)
+                    with col1:
+                        if st.button("⚡ Fast Load", type="primary", help="Load from saved state (recommended)"):
+                            with st.sidebar:
+                                if run_fast_initialization():
+                                    st.success("✅ Fast initialization complete!")
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Fast initialization failed")
+                    
+                    with col2:
+                        if st.button("🔄 Rebuild", help="Process documents from scratch"):
+                            with st.sidebar:
+                                if run_initialization_pipeline():
+                                    st.success("✅ System initialized successfully!")
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Initialization failed")
+            else:
+                st.sidebar.info("🆕 **First time setup**")
+                
+                # Full initialization button
+                if st.sidebar.button("🚀 Initialize System", type="primary", help="Process documents and create knowledge base"):
+                    with st.sidebar:
+                        if run_initialization_pipeline():
+                            st.success("✅ System initialized successfully!")
+                            st.rerun()
+                        else:
+                            st.error("❌ Initialization failed")
         
         # Clear saved state option
         if existing_state['complete_state_exist']:
@@ -1565,23 +1594,7 @@ def display_sidebar():
     
     # System information
     st.sidebar.markdown("### ℹ️ About")
-    st.sidebar.markdown("""
-    This AI-powered Ayurveda bot uses:
-    - **Modern LangChain** for document processing
-    - **ChromaDB** for vector storage  
-    - **OpenAI/HuggingFace** for embeddings
-    - **GPT/Ollama** for AI responses
-    - **Streamlit** for the interface
-    - **Persistent Storage** for fast reloading
-    
-    ### 🚀 **Performance Features:**
-    - ⚡ **Fast initialization** from saved state
-    - 💾 **Persistent storage** of processed documents
-    - 🔄 **Auto-detection** of document changes
-    - 📊 **Analytics tracking** across sessions
-    
-    The system processes PDF documents about Ayurveda and provides intelligent responses based on traditional knowledge.
-    """)
+    st.sidebar.markdown("AI-powered Ayurveda consultant for intelligent responses based on traditional knowledge.")
 
 # =============================================================================
 # 🚀 MAIN APPLICATION
@@ -1637,90 +1650,119 @@ def main():
     if not st.session_state.pipeline_initialized:
         # Check for saved state to show appropriate instructions
         existing_state = check_existing_state()
-        kb_changed = check_knowledge_base_changes()
         
-        if existing_state['complete_state_exist'] and not kb_changed:
-            # Fast initialization available
-            st.markdown("""
-            ## ⚡ Welcome Back!
-            
-            Great news! I found your previously processed knowledge base. You can:
-            
-            ### 🚀 **Fast Load (Recommended)**
-            - ⚡ **Instant startup** in ~5-10 seconds
-            - 📦 **Use saved documents** and embeddings  
-            - 🤖 **Ready to chat** immediately
-            #### **👈 Choose Fast Load in the sidebar!**
-                        
-            ### ⚠️ Please DO NOT rebuild the knowledge base
-            **it will take a lot of time and resources.**
-            
-            
-            """)
-            
-            # Show saved state info
-            if existing_state['last_update']:
-                if '|' in existing_state['last_update']:
-                    timestamp, _ = existing_state['last_update'].split('|', 1)
-                    st.info(f"💾 **Last processed:** {timestamp}")
-        
-        elif existing_state['complete_state_exist'] and kb_changed:
-            # Knowledge base changed
-            st.markdown("""
-            ## ⚠️ Knowledge Base Updated
-            
-            I detected that your PDF documents have been modified since the last initialization.
-            
-            ### 🚀 **Fast Load**
-            - ⚡ **Quick startup** using existing processed data
-            - ⚠️ **May miss new content** from updated PDFs
-            - 💬 **Ready to chat** with previous knowledge
-            
-            ### 🔄 **Full Rebuild (Recommended)**
-            - 🔍 **Process all current documents** 
-            - ✅ **Include latest changes** in your PDFs
-            - 💾 **Update saved state** for future fast loading
-            
-            **👈 Choose your option in the sidebar!**
-            """)
-        
-        else:
-            # First time setup
-            st.markdown("""
-            ## 🚀 First Time Setup
-            
-            Welcome to the Ayurveda Knowledge Bot! Let's get you started:
-            
-            1. **📁 Prepare Documents**: Ensure your `knowledge_base_files` folder contains PDF documents about Ayurveda
-            2. **🔑 API Keys**: Set your OpenAI API key in environment variables (optional)
-            3. **🚀 Initialize**: Click "Initialize System" in the sidebar
-            4. **💬 Chat**: Start asking questions about Ayurveda!
-            
-            ### 📋 System Requirements
-            - PDF documents in `knowledge_base_files/` folder
-            - Internet connection for downloading models
-            - Optional: OpenAI API key for best performance
-            
-            ### 💡 **After first initialization:**
-            - ⚡ **Fast loading** on subsequent runs
-            - 💾 **Persistent storage** of processed documents
-            - 🔄 **Auto-detection** of document changes
-            """)
-        
-        # Check for knowledge base folder
-        if os.path.exists(APP_CONFIG["knowledge_base_folder"]):
-            pdf_files = list(Path(APP_CONFIG["knowledge_base_folder"]).glob("*.pdf"))
-            if pdf_files:
-                st.success(f"✅ Found {len(pdf_files)} PDF files in knowledge base")
+        if DEPLOYMENT_CONFIG.get("environment") == "streamlit_cloud":
+            # Cloud deployment - simplified interface
+            if existing_state['complete_state_exist']:
+                st.markdown("""
+                ## 🌿 Ayurveda Knowledge Bot
+                **Your AI consultant for traditional Ayurvedic medicine**
                 
-                with st.expander("📁 Knowledge Base Files"):
-                    for pdf_file in pdf_files:
-                        file_size = pdf_file.stat().st_size / 1024  # KB
-                        st.write(f"- {pdf_file.name} ({file_size:.1f} KB)")
+                
+                **👈 Click "Fast Load" in the sidebar to begin!**
+                """)
+                
+                # Show saved state info
+                if existing_state['last_update']:
+                    if '|' in existing_state['last_update']:
+                        timestamp, _ = existing_state['last_update'].split('|', 1)
+                        st.info(f"💾 **Knowledge base last updated:** {timestamp}")
             else:
-                st.warning("⚠️ No PDF files found in knowledge_base_files folder")
+                st.markdown("""
+                ## 🌿 Ayurveda Knowledge Bot
+                **Your AI consultant for traditional Ayurvedic medicine**
+                
+                ### 🚀 **System Initialization**
+                The system is ready to initialize with pre-processed Ayurvedic knowledge.
+                
+                **👈 Click "Initialize System" in the sidebar to begin!**
+                """)
         else:
-            st.error(f"❌ Knowledge base folder not found: {APP_CONFIG['knowledge_base_folder']}")
+            # Local development - show full options
+            kb_changed = check_knowledge_base_changes()
+            
+            if existing_state['complete_state_exist'] and not kb_changed:
+                # Fast initialization available
+                st.markdown("""
+                ## ⚡ Welcome Back!
+                
+                Great news! I found your previously processed knowledge base. You can:
+                
+                ### 🚀 **Fast Load (Recommended)**
+                - ⚡ **Instant startup** in ~5-10 seconds
+                - 📦 **Use saved documents** and embeddings  
+                - 🤖 **Ready to chat** immediately
+                #### **👈 Choose Fast Load in the sidebar!**
+                            
+                ### ⚠️ Please DO NOT rebuild the knowledge base
+                **it will take a lot of time and resources.**
+                
+                
+                """)
+                
+                # Show saved state info
+                if existing_state['last_update']:
+                    if '|' in existing_state['last_update']:
+                        timestamp, _ = existing_state['last_update'].split('|', 1)
+                        st.info(f"💾 **Last processed:** {timestamp}")
+            
+            elif existing_state['complete_state_exist'] and kb_changed:
+                # Knowledge base changed
+                st.markdown("""
+                ## ⚠️ Knowledge Base Updated
+                
+                I detected that your PDF documents have been modified since the last initialization.
+                
+                ### 🚀 **Fast Load**
+                - ⚡ **Quick startup** using existing processed data
+                - ⚠️ **May miss new content** from updated PDFs
+                - 💬 **Ready to chat** with previous knowledge
+                
+                ### 🔄 **Full Rebuild (Recommended)**
+                - 🔍 **Process all current documents** 
+                - ✅ **Include latest changes** in your PDFs
+                - 💾 **Update saved state** for future fast loading
+                
+                **👈 Choose your option in the sidebar!**
+                """)
+            
+            else:
+                # First time setup
+                st.markdown("""
+                ## 🚀 First Time Setup
+                
+                Welcome to the Ayurveda Knowledge Bot! Let's get you started:
+                
+                1. **📁 Prepare Documents**: Ensure your `knowledge_base_files` folder contains PDF documents about Ayurveda
+                2. **🔑 API Keys**: Set your OpenAI API key in environment variables (optional)
+                3. **🚀 Initialize**: Click "Initialize System" in the sidebar
+                4. **💬 Chat**: Start asking questions about Ayurveda!
+                
+                ### 📋 System Requirements
+                - PDF documents in `knowledge_base_files/` folder
+                - Internet connection for downloading models
+                - Optional: OpenAI API key for best performance
+                
+                ### 💡 **After first initialization:**
+                - ⚡ **Fast loading** on subsequent runs
+                - 💾 **Persistent storage** of processed documents
+                - 🔄 **Auto-detection** of document changes
+                """)
+            
+            # Check for knowledge base folder (local only)
+            if os.path.exists(APP_CONFIG["knowledge_base_folder"]):
+                pdf_files = list(Path(APP_CONFIG["knowledge_base_folder"]).glob("*.pdf"))
+                if pdf_files:
+                    st.success(f"✅ Found {len(pdf_files)} PDF files in knowledge base")
+                    
+                    with st.expander("📁 Knowledge Base Files"):
+                        for pdf_file in pdf_files:
+                            file_size = pdf_file.stat().st_size / 1024  # KB
+                            st.write(f"- {pdf_file.name} ({file_size:.1f} KB)")
+                else:
+                    st.warning("⚠️ No PDF files found in knowledge_base_files folder")
+            else:
+                st.error(f"❌ Knowledge base folder not found: {APP_CONFIG['knowledge_base_folder']}")
     
     else:
         # Show chat interface
