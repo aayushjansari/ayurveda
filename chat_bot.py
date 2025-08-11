@@ -12,8 +12,15 @@ This file combines:
 Run with: streamlit run chat_bot.py
 """
 
-import os
+# Fix SQLite compatibility for ChromaDB on Streamlit Cloud
 import sys
+try:
+    import pysqlite3
+    sys.modules['sqlite3'] = pysqlite3
+except ImportError:
+    pass
+
+import os
 import time
 import shutil
 import traceback
