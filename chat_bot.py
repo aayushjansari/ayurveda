@@ -85,7 +85,14 @@ def get_deployment_config():
     """Get configuration based on deployment environment"""
     
     # Check if running on Streamlit Cloud
-    if "STREAMLIT_SHARING" in os.environ or "STREAMLIT_CLOUD" in os.environ or "streamlit.io" in os.environ.get("STREAMLIT_SERVER_ADDRESS", ""):
+    is_streamlit_cloud = (
+        "STREAMLIT_SHARING" in os.environ or 
+        "STREAMLIT_CLOUD" in os.environ or 
+        "streamlit.io" in os.environ.get("STREAMLIT_SERVER_ADDRESS", "") or
+        os.path.exists("/mount/src")  # Streamlit Cloud mount point
+    )
+    
+    if is_streamlit_cloud:
         return {
             "environment": "streamlit_cloud",
             "vector_db_path": "./chroma_db",
@@ -715,7 +722,23 @@ class ModernEmbeddingSystem:
         st.write(f"🧠 **Loading embeddings from saved config...**")
         st.info(f"Previous strategy: {config.get('model_info', {}).get('description', 'Unknown')}")
         
-        # Try to recreate the same embedder
+        # For cloud deployment, prioritize HuggingFace for compatibility
+        if DEPLOYMENT_CONFIG.get("environment") == "streamlit_cloud":
+            st.info("🌐 Cloud deployment detected - using HuggingFace embeddings for compatibility")
+            try:
+                embedder = HuggingFaceEmbeddings(
+                    model_name='all-MiniLM-L6-v2',
+                    model_kwargs={'device': 'cpu', 'trust_remote_code': False},
+                    encode_kwargs={'normalize_embeddings': True}
+                )
+                self.embedder = embedder
+                self.strategy_name = 'huggingface'
+                st.success("✅ Using HuggingFace embeddings for cloud compatibility")
+                return embedder, 'huggingface'
+            except Exception as e:
+                st.warning(f"HuggingFace embeddings failed: {e}")
+        
+        # Try to recreate the same embedder for local development
         if strategy_name == 'openai' and os.getenv("OPENAI_API_KEY") and MODERN_LANGCHAIN_AVAILABLE:
             try:
                 embedder = OpenAIEmbeddings(
@@ -745,7 +768,7 @@ class ModernEmbeddingSystem:
                 st.warning(f"Failed to reload HuggingFace embeddings: {e}")
         
         # Fallback to normal initialization
-        st.warning("⚠️ Could not reload saved embeddings, initializing fresh")
+        st.warning("⚠️ Could not reload saved embeddings, using HuggingFace fallback")
         return self.initialize_embeddings()
     
     def create_vector_store(self, chunks: List[Document]) -> Any:
@@ -841,6 +864,19 @@ class ModernEmbeddingSystem:
             
         except Exception as e:
             st.warning(f"⚠️ Failed to load existing vector store: {e}")
+            
+            # For cloud deployment, automatically rebuild if corrupted
+            if DEPLOYMENT_CONFIG.get("environment") == "streamlit_cloud":
+                st.info("🔄 Cloud deployment detected - will rebuild vector database from saved chunks")
+                try:
+                    # Clear corrupted database
+                    if os.path.exists(persist_directory):
+                        import shutil
+                        shutil.rmtree(persist_directory)
+                        st.info("🗑️ Cleared corrupted vector database")
+                except Exception:
+                    pass
+            
             return None
     
     def test_vector_store(self):
@@ -1161,8 +1197,20 @@ def run_fast_initialization():
         
         vector_store = embedding_system.load_existing_vector_store()
         if not vector_store:
-            st.error("❌ Failed to load vector database")
-            return False
+            st.warning("⚠️ Vector database needs rebuilding")
+            status_text.text("🔄 Rebuilding vector database from saved chunks...")
+            progress_bar.progress(65)
+            
+            # Rebuild from saved chunks
+            try:
+                vector_store = embedding_system.create_vector_store(processor.chunks)
+                if not vector_store:
+                    st.error("❌ Failed to rebuild vector database")
+                    return False
+                st.success("✅ Vector database rebuilt successfully")
+            except Exception as e:
+                st.error(f"❌ Failed to rebuild vector database: {e}")
+                return False
         
         if not embedding_system.test_vector_store():
             st.warning("⚠️ Vector store test failed but proceeding...")
