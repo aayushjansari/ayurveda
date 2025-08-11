@@ -1150,9 +1150,7 @@ I'm your AI consultant specializing in traditional Ayurvedic medicine. I can hel
 🔹 **Lifestyle Guidance** - Diet, routines, and wellness practices  
 🔹 **Classical Wisdom** - Insights from ancient Ayurvedic texts  
 
-*Please note: This information is for educational purposes. Always consult qualified Ayurvedic practitioners for personalized treatment.*
-
-**First, let me initialize the knowledge base. Click 'Initialize System' in the sidebar! then click on Fast Load**"""
+*Please note: This information is for educational purposes. Always consult qualified Ayurvedic practitioners for personalized treatment.*"""
         
         st.session_state.messages.append({
             "role": "assistant", 
@@ -1555,8 +1553,8 @@ def display_sidebar():
                         else:
                             st.error("❌ Initialization failed")
         
-        # Clear saved state option
-        if existing_state['complete_state_exist']:
+        # Clear saved state option (local development only)
+        if DEPLOYMENT_CONFIG.get("environment") != "streamlit_cloud" and existing_state['complete_state_exist']:
             st.sidebar.markdown("---")
             if st.sidebar.button("🗑️ Clear Saved State", help="Remove all saved data"):
                 if clear_persistent_state():
@@ -1672,10 +1670,7 @@ def main():
                 ## 🌿 Ayurveda Knowledge Bot
                 **Your AI consultant for traditional Ayurvedic medicine**
                 
-                ### 🚀 **System Initialization**
-                The system is ready to initialize with pre-processed Ayurvedic knowledge.
                 
-                **👈 Click "Initialize System" in the sidebar to begin!**
                 """)
         else:
             # Local development - show full options
